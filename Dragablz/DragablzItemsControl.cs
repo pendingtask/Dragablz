@@ -46,7 +46,14 @@ namespace Dragablz
 
         private void ItemContainerGeneratorOnItemsChanged(object sender, ItemsChangedEventArgs itemsChangedEventArgs)
         {
-            //throw new NotImplementedException();
+            if (ItemsOrganiser == null) return;
+
+            var dragablzItems = DragablzItems().ToList();
+            ItemsOrganiser.Organise(this, new Size(ItemsPresenterWidth, ItemsPresenterHeight), dragablzItems);
+            var measure = ItemsOrganiser.Measure(this, new Size(ActualWidth, ActualHeight), dragablzItems);
+            ItemsPresenterWidth = measure.Width;
+            ItemsPresenterHeight = measure.Height;
+            InvalidateMeasure();
         }
 
         protected override void ClearContainerForItemOverride(DependencyObject element, object item)

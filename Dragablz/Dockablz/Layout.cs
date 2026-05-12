@@ -23,7 +23,7 @@ namespace Dragablz.Dockablz
     [TemplatePart(Name = FloatingContentPresenterPartName, Type = typeof(ContentPresenter))]
     public class Layout : ContentControl
     {
-        private static readonly HashSet<Layout> LoadedLayouts = new HashSet<Layout>();
+        private static readonly InstanceRegistry<Layout> _loadedLayouts = new InstanceRegistry<Layout>();
         private const string TopDropZonePartName = "PART_TopDropZone";
         private const string RightDropZonePartName = "PART_RightDropZone";
         private const string BottomDropZonePartName = "PART_BottomDropZone";
@@ -59,10 +59,10 @@ namespace Dragablz.Dockablz
         {
             Loaded += (sender, args) =>
             {
-                LoadedLayouts.Add(this);
+                _loadedLayouts.Register(this);
                 MarkTopLeftItem(this);
             };
-            Unloaded += (sender, args) => LoadedLayouts.Remove(this);
+            Unloaded += (sender, args) => _loadedLayouts.Unregister(this);
 
             CommandBindings.Add(new CommandBinding(UnfloatItemCommand, UnfloatExecuted, CanExecuteUnfloat));
             CommandBindings.Add(new CommandBinding(MaximiseFloatingItem, MaximiseFloatingItemExecuted, CanExecuteMaximiseFloatingItem));
@@ -102,7 +102,7 @@ namespace Dragablz.Dockablz
         /// <returns></returns>
         public static IEnumerable<Layout> GetLoadedInstances()
         {
-            return LoadedLayouts.ToList();
+            return _loadedLayouts.GetAliveInstances().ToList();
         }
 
         /// <summary>
@@ -462,7 +462,7 @@ namespace Dragablz.Dockablz
             var draggingWindow = Window.GetWindow(dragablzItem);
             if (draggingWindow == null) return;
 
-            foreach (var loadedLayout in LoadedLayouts.Where(l =>
+            foreach (var loadedLayout in _loadedLayouts.GetAliveInstances().Where(l =>
                 l.Partition?.ToString() == dragablzItem.PartitionAtDragStart &&
                 !Equals(Window.GetWindow(l), draggingWindow)))
 
@@ -681,7 +681,7 @@ namespace Dragablz.Dockablz
         {
             _isDragOpWireUpPending = false;
 
-            foreach (var loadedLayout in LoadedLayouts)
+            foreach (var loadedLayout in _loadedLayouts.GetAliveInstances())
                 loadedLayout.IsParticipatingInDrag = false;
 
             if (_currentlyOfferedDropZone == null || e.DragablzItem.IsDropTargetFound) return;
@@ -736,7 +736,7 @@ namespace Dragablz.Dockablz
                 _isDragOpWireUpPending = false;
             }
 
-            foreach (var layout in LoadedLayouts.Where(l => l.IsParticipatingInDrag))
+            foreach (var layout in _loadedLayouts.GetAliveInstances().Where(l => l.IsParticipatingInDrag))
             {
                 var cursorPos = Native.GetCursorPos();
                 layout.MonitorDropZones(cursorPos);

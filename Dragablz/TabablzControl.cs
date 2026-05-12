@@ -47,8 +47,8 @@ namespace Dragablz
         /// </summary>
         public static RoutedCommand AddItemCommand = new RoutedUICommand("Add", "Add", typeof(TabablzControl));
 
-        private static readonly HashSet<TabablzControl> LoadedInstances = new HashSet<TabablzControl>();
-        private static readonly HashSet<TabablzControl> VisibleInstances = new HashSet<TabablzControl>();
+        private static readonly InstanceRegistry<TabablzControl> _loadedInstances = new InstanceRegistry<TabablzControl>();
+        private static readonly InstanceRegistry<TabablzControl> _visibleInstances = new InstanceRegistry<TabablzControl>();
 
         private Panel _itemsHolder;
         private TabHeaderDragStartInformation _tabHeaderDragStartInformation;
@@ -90,7 +90,7 @@ namespace Dragablz
         /// <returns></returns>
         public static IEnumerable<TabablzControl> GetLoadedInstances()
         {
-            return LoadedInstances.Union(VisibleInstances).Distinct().ToList();
+            return _loadedInstances.GetAliveInstances().Union(_visibleInstances.GetAliveInstances()).Distinct().ToList();
         }
 
         /// <summary>
@@ -876,21 +876,21 @@ namespace Dragablz
 
         internal static TabablzControl GetOwnerOfHeaderItems(DragablzItemsControl itemsControl)
         {
-            return LoadedInstances.FirstOrDefault(t => Equals(t._dragablzItemsControl, itemsControl));
+            return _loadedInstances.GetAliveInstances().FirstOrDefault(t => Equals(t._dragablzItemsControl, itemsControl));
         }
 
         private static void OnIsVisibleChanged(object sender, DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
         {
             var tabablzControl = (TabablzControl)sender;
             if (tabablzControl.IsVisible)
-                VisibleInstances.Add(tabablzControl);
-            else if (VisibleInstances.Contains(tabablzControl))
-                VisibleInstances.Remove(tabablzControl);
+                _visibleInstances.Register(tabablzControl);
+            else
+                _visibleInstances.Unregister(tabablzControl);
         }
 
         private void OnLoaded(object sender, RoutedEventArgs routedEventArgs)
         {
-            LoadedInstances.Add(this);
+            _loadedInstances.Register(this);
             var window = Window.GetWindow(this);
             if (window == null) return;
             window.Closing += WindowOnClosing;
@@ -918,7 +918,7 @@ namespace Dragablz
             }
 
             var target =
-                LoadedInstances.Except(this)
+                _loadedInstances.GetAliveInstances().Except([this])
                     .FirstOrDefault(
                         other =>
                             other.InterTabController != null &&
@@ -935,7 +935,7 @@ namespace Dragablz
         private void OnUnloaded(object sender, RoutedEventArgs routedEventArgs)
         {
             _windowSubscription.Disposable = Disposable.Empty;
-            LoadedInstances.Remove(this);
+            _loadedInstances.Unregister(this);
         }
 
         private void MarkWrappedTabItems()
@@ -1059,7 +1059,7 @@ namespace Dragablz
                 return false;
             }
 
-            var otherTabablzControls = LoadedInstances
+            var otherTabablzControls = _loadedInstances.GetAliveInstances()
                 .Where(
                     tc =>
                         tc != this && tc.InterTabController != null && InterTabController != null
@@ -1541,7 +1541,7 @@ namespace Dragablz
 
             if (dragablzItem == null) return null;
 
-            var tabablzControl = LoadedInstances.FirstOrDefault(tc => tc.IsMyItem(dragablzItem));
+            var tabablzControl = _loadedInstances.GetAliveInstances().FirstOrDefault(tc => tc.IsMyItem(dragablzItem));
 
             return tabablzControl == null ? null : new Tuple<DragablzItem, TabablzControl>(dragablzItem, tabablzControl);
         }
