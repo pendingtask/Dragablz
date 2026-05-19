@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dotnet build *)",
+      "Bash(dotnet sln *)",
+      "Bash(dotnet restore *)",
+      "Bash(dotnet nuget *)",
+      "Bash(dotnet run *)",
+      "Bash(taskkill /F /IM Dragablz.Demo.Prism.exe)"
+    ]
+  }
+}

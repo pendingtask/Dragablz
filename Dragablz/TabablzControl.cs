@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -12,6 +12,7 @@ using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
+
 using Dragablz.Core;
 using Dragablz.Dockablz;
 using Dragablz.Referenceless;
@@ -487,6 +488,24 @@ namespace Dragablz
         {
             get { return (ItemActionCallback)GetValue(ClosingItemCallbackProperty); }
             set { SetValue(ClosingItemCallbackProperty, value); }
+        }
+
+        public static readonly DependencyProperty ClosingItemCommandProperty = DependencyProperty.Register(
+            "ClosingItemCommand", typeof(ICommand), typeof(TabablzControl), new PropertyMetadata(default(ICommand)));
+
+        public ICommand ClosingItemCommand
+        {
+            get => (ICommand)GetValue(ClosingItemCommandProperty);
+            set => SetValue(ClosingItemCommandProperty, value);
+        }
+
+        public static readonly DependencyProperty AddingItemCommandProperty = DependencyProperty.Register(
+            "AddingItemCommand", typeof(ICommand), typeof(TabablzControl), new PropertyMetadata(default(ICommand)));
+
+        public ICommand AddingItemCommand
+        {
+            get => (ICommand)GetValue(AddingItemCommandProperty);
+            set => SetValue(AddingItemCommandProperty, value);
         }
 
         /// <summary>
@@ -1497,6 +1516,16 @@ namespace Dragablz
             if (!owner.IsMyItem(item))
                 throw new ApplicationException("TabablzControl container must be an owner of the DragablzItem to close");
 
+            var dataObject = owner._dragablzItemsControl.ItemContainerGenerator.ItemFromContainer(item);
+
+            if (owner.ClosingItemCommand != null)
+            {
+                owner.ClosingItemCommand.Execute(dataObject);
+
+                if (owner._dragablzItemsControl.ItemContainerGenerator.ContainerFromItem(dataObject) == null)
+                    return;
+            }
+
             var cancel = false;
             if (owner.ClosingItemCallback != null)
             {
@@ -1548,8 +1577,15 @@ namespace Dragablz
 
         private void AddItemHandler(object sender, ExecutedRoutedEventArgs e)
         {
+            if (AddingItemCommand != null)
+                AddingItemCommand.Execute(this);
+
             if (NewItemFactory == null)
-                throw new InvalidOperationException("NewItemFactory must be provided.");
+            {
+                if (AddingItemCommand == null)
+                    throw new InvalidOperationException("NewItemFactory or AddingItemCommand must be provided.");
+                return;
+            }
 
             var newItem = NewItemFactory();
             if (newItem == null) throw new ApplicationException("NewItemFactory returned null.");
