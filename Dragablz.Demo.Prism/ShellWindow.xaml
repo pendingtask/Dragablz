@@ -1,9 +1,10 @@
-﻿<Window
+<Window
     x:Class="Dragablz.Demo.Prism.ShellWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:dragablz="clr-namespace:Dragablz;assembly=Dragablz"
+    xmlns:dragablzThemes="clr-namespace:Dragablz.Themes;assembly=Dragablz"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Title="Dragablz + Prism MVVM Demo"
     Width="1100"
@@ -171,19 +172,23 @@
             Background="LightGray" />
 
         <!--  ═══ Main TabablzControl ═══  -->
+        <!--  ItemContainerStyle="{StaticResource TrapezoidDragableTabItemStyle}"  -->
         <dragablz:TabablzControl
             Grid.Column="2"
             Margin="4,0,0,0"
+            dragablzThemes:MaterialDesignHeaderedAssist.HeaderBackground="{DynamicResource PrimaryHueMidBrush}"
+            dragablzThemes:MaterialDesignHeaderedAssist.HeaderForeground="White"
             AddLocationHint="{Binding SelectedAddLocationHint}"
             AddingItemCommand="{Binding EffectiveAddingItemCommand}"
             ClosingItemCallback="{Binding EffectiveClosingItemCallback}"
             ClosingItemCommand="{Binding EffectiveClosingItemCommand}"
             FixedHeaderCount="{Binding FixedHeaderCount}"
-            ItemContainerStyle="{StaticResource TrapezoidDragableTabItemStyle}"
+            ItemContainerStyle="{StaticResource MaterialDesignDenseDragableTabItemStyle}"
             ItemsSource="{Binding Tabs}"
             NewItemFactory="{Binding EffectiveNewItemFactory}"
             ShowDefaultAddButton="{Binding ShowAddButton}"
-            ShowDefaultCloseButton="{Binding ShowCloseButton}">
+            ShowDefaultCloseButton="{Binding ShowCloseButton}"
+            Style="{StaticResource MaterialDesignElevatedTabablzControlStyle}">
             <dragablz:TabablzControl.HeaderItemTemplate>
                 <DataTemplate>
                     <TextBlock Text="{Binding Header}" />

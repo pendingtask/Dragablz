@@ -1,6 +1,6 @@
 # Dragablz — 项目地图/综述
 
-> Claude Code 导航用项目全览。覆盖 89 个 C# 源文件、4 个 XAML 主题、6 个命名空间、0 个 NuGet 依赖。
+> Claude Code 导航用项目全览。覆盖 91 个 C# 源文件、4 个 XAML 主题、6 个命名空间、0 个 NuGet 依赖。
 
 ---
 
@@ -57,11 +57,13 @@ Dragablz/
 ├── Themes/
 │   ├── BrushToRadialGradientBrushConverter.cs  径向渐变转换器
 │   ├── MaterialDesignAssist.cs    Material Design 辅助附加属性
+│   ├── MaterialDesignHeaderedAssist.cs  头部着色/指示器附加属性（新增）
 │   ├── Ripple.cs                 Material Design 涟漪效果控件
 │   ├── RippleAssist.cs           涟漪配置附加属性
 │   ├── SystemCommandIcon.cs      窗口系统命令图标控件
+│   ├── UnderlineIndicator.cs     动画下划线指示器控件（新增）
 │   ├── Generic.xaml              (~1909 行 — 默认主题)
-│   ├── MaterialDesign.xaml       (~802 行 — Material Design 主题)
+│   ├── MaterialDesign.xaml       (~1100 行 — Material Design 主题，含 14 种样式)
 │   ├── MahApps.xaml              (~442 行 — MahApps.Metro 主题)
 │   └── Dockablz.xaml             (空白占位文件)
 └── Properties/
@@ -774,6 +776,38 @@ SolidColorBrush → RadialGradientBrush（中心渐变到透明，Opacity 0.39�
 
 ---
 
+#### `UnderlineIndicator` : `Control`
+**文件：** `Dragablz/Themes/UnderlineIndicator.cs`（新增）
+
+Material Design 动画下划线指示器控件。选中时 ScaleTransform 水平展开，取消时收缩。
+
+**依赖属性：**
+| DP 名称 | 类型 | 默认值 | 用途 |
+|---------|------|--------|------|
+| `IsActivated` | bool | false | 是否激活，触发展开/收缩动画 |
+| `IndicatorBrush` | Brush | null | 指示器的颜色 |
+| `IndicatorThickness` | double | 2.0 | 指示器的厚度（高度） |
+| `IndicatorCornerRadius` | double | 0.0 | 指示器的圆角半径 |
+
+**关键逻辑：** `OnActivatedChanged` 静态回调中调用 `VisualStateManager.GoToState` 切换到 "Activated" 或 "Deactivated" 视觉状态。Activated 状态 300ms SineEase EaseOut 将 ScaleX 从 0 动画到 1，Deactivated 状态 200ms SineEase EaseIn 将 ScaleX 从 1 动画回 0。
+
+---
+
+#### `MaterialDesignHeaderedAssist`（静态类）
+**文件：** `Dragablz/Themes/MaterialDesignHeaderedAssist.cs`（新增）
+
+扩展 Material Design 主题的附加属性类。所有属性均支持继承。
+
+**附加属性：**
+| 附加属性 | 类型 | 默认值 | 用途 |
+|---------|------|--------|------|
+| `HeaderBackground` | Brush | null | Tab 头部条的背景色 |
+| `HeaderForeground` | Brush | null | Tab 头部条的前景色 |
+| `IsIndicatorAnimated` | bool | true | 是否启用动画 |
+| `IndicatorThickness` | double | 2.0 | 下划线指示器的厚度 |
+
+---
+
 ### 3.12 命名空间 `Dragablz.Referenceless`（Internal）
 
 轻量级 Rx 风格 Disposable 实现（避免依赖 System.Reactive）：
@@ -1049,9 +1083,11 @@ MahApps.Metro 主题变体。使用梯形 Tab（`Trapezoid` 控件）、MahApps.
 |------|------|
 | `BrushToRadialGradientBrushConverter.cs` | BrushToRadialGradientBrushConverter : IValueConverter |
 | `MaterialDesignAssist.cs` | MaterialDesignAssist（静态类） |
+| `MaterialDesignHeaderedAssist.cs` | MaterialDesignHeaderedAssist（静态类，新增） |
 | `Ripple.cs` | Ripple : ContentControl |
 | `RippleAssist.cs` | RippleAssist（静态类） |
 | `SystemCommandIcon.cs` | SystemCommandIcon : Control（含 SystemCommandType 枚举） |
+| `UnderlineIndicator.cs` | UnderlineIndicator : Control（新增） |
 | `Generic.xaml` | 默认主题（~1909 行） |
 | `MaterialDesign.xaml` | Material Design 主题（~802 行） |
 | `MahApps.xaml` | MahApps.Metro 主题（~442 行） |
